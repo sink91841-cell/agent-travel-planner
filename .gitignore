@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Python virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# Node / frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+dist-ssr/
+*.local
+
+# Environment and local data
+.env
+.env.local
+.env.*.local
+backend/.env
+backend/data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor and OS
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Local agent and QA artifacts
+.agents/
+.superpowers/
+docs/superpowers/
+.docx_qa_final/
+.docx_qa_original/
+tools/
