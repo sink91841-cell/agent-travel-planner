@@ -1,211 +1,209 @@
-# 智能旅行助手
+# Agent Travel Planner
 
-智能旅行助手集成高德地图 MCP 服务，提供个性化旅行计划生成、历史记录查看、编辑和删除功能。
+An intelligent multi-agent travel planning system powered by [HelloAgents](https://github.com/jjyaoao/HelloAgents) framework, integrating AMap (高德地图) MCP services for real-time POI search, weather queries, hotel recommendations, and route planning.
 
-## ✨ 功能特点
+## Features
 
-- 🤖 **AI驱动的旅行规划**: 基于HelloAgents框架的SimpleAgent,智能生成详细的多日旅程
-- 🗺️ **高德地图集成**: 通过MCP协议接入高德地图服务,支持景点搜索、路线规划、天气查询
-- 🧠 **智能工具调用**: Agent自动调用高德地图MCP工具,获取实时POI、路线和天气信息
-- 🎨 **现代化前端**: Vue3 + TypeScript + Vite,响应式设计,流畅的用户体验
-- 📱 **完整功能**: 包含住宿、交通、餐饮和景点游览时间推荐
+- **Multi-Agent Collaboration** — Four specialized agents (Attraction Search, Weather Query, Hotel Recommendation, Trip Planning) work together to generate comprehensive travel itineraries
+- **AMap MCP Integration** — Real-time access to AMap geospatial services via MCP protocol: POI search, weather forecasts, and multi-modal route planning
+- **Complete Trip Planning** — Generates daily itineraries including attractions with visit durations, meals (breakfast/lunch/dinner), hotel recommendations with pricing, and transportation suggestions
+- **Budget Estimation** — Automatic cost breakdown for attractions, hotels, meals, and transportation
+- **History Management** — Full CRUD operations on past trip plans with SQLite persistence
+- **PDF Export** — One-click export trip plans to PDF (via html2canvas + jsPDF)
+- **Modern Frontend** — Vue 3 + TypeScript + Ant Design Vue with responsive design
 
-## 🏗️ 技术栈
-
-### 后端
-- **框架**: HelloAgents (基于SimpleAgent)
-- **API**: FastAPI
-- **MCP工具**: amap-mcp-server (高德地图)
-- **LLM**: 支持多种LLM提供商(OpenAI, DeepSeek等)
-
-### 前端
-- **框架**: Vue 3 + TypeScript
-- **构建工具**: Vite
-- **UI组件库**: Ant Design Vue
-- **地图服务**: 高德地图 JavaScript API
-- **HTTP客户端**: Axios
-
-## 📁 项目结构
+## Architecture
 
 ```
-helloagents-trip-planner/
-├── backend/                    # 后端服务
+┌─────────────────────────┐     ┌──────────────────────────────────┐
+│   Frontend (Vue 3)      │────▶│   Backend (FastAPI)              │
+│   Port 5173             │     │   Port 8000                      │
+│                         │     │                                  │
+│   • Ant Design Vue UI   │     │   Multi-Agent System             │
+│   • AMap JS API         │     │   ┌──────────────────────────┐   │
+│   • PDF Export          │     │   │ Attraction Agent  (MCP)  │   │
+│   • History CRUD        │     │   │ Weather Agent     (MCP)  │   │
+└─────────────────────────┘     │   │ Hotel Agent      (MCP)  │   │
+                                │   │ Planner Agent            │   │
+                                │   └──────────────────────────┘   │
+                                │              │                   │
+                                │              ▼                   │
+                                │   ┌──────────────────────────┐   │
+                                │   │  AMap MCP Server          │   │
+                                │   │  (amap-mcp-server)        │   │
+                                │   └──────────────────────────┘   │
+                                └──────────────────────────────────┘
+```
+
+## Tech Stack
+
+### Backend
+| Component | Technology |
+|-----------|-----------|
+| Agent Framework | HelloAgents (SimpleAgent + MCPTool) |
+| API Framework | FastAPI + Pydantic v2 |
+| MCP Server | amap-mcp-server (AMap MCP) |
+| LLM Support | OpenAI, DeepSeek, and more |
+| Database | SQLite (trip history) |
+| HTTP Client | httpx, aiohttp |
+
+### Frontend
+| Component | Technology |
+|-----------|-----------|
+| Framework | Vue 3.5 + Composition API |
+| Language | TypeScript 5.7 |
+| Build Tool | Vite 6 |
+| UI Library | Ant Design Vue 4 |
+| Map | AMap JavaScript API (Loader) |
+| PDF Export | html2canvas + jsPDF |
+| HTTP Client | Axios |
+
+## Project Structure
+
+```
+agent-travel-planner/
+├── backend/
 │   ├── app/
-│   │   ├── agents/            # Agent实现
-│   │   │   └── trip_planner_agent.py
-│   │   ├── api/               # FastAPI路由
-│   │   │   ├── main.py
+│   │   ├── agents/
+│   │   │   └── trip_planner_agent.py    # Multi-agent orchestration
+│   │   ├── api/
+│   │   │   ├── main.py                   # FastAPI app entry
 │   │   │   └── routes/
-│   │   │       ├── trip.py
-│   │   │       └── map.py
-│   │   ├── services/          # 服务层
-│   │   │   ├── amap_service.py
-│   │   │   └── llm_service.py
-│   │   ├── models/            # 数据模型
-│   │   │   └── schemas.py
-│   │   └── config.py          # 配置管理
+│   │   │       ├── trip.py               # Trip planning endpoint
+│   │   │       ├── history.py            # History CRUD endpoints
+│   │   │       ├── map.py                # Map service endpoints
+│   │   │       └── poi.py                # POI search endpoint
+│   │   ├── services/
+│   │   │   ├── llm_service.py            # LLM provider abstraction
+│   │   │   ├── amap_service.py           # AMap API wrapper
+│   │   │   └── trip_history_service.py   # SQLite history service
+│   │   ├── models/
+│   │   │   └── schemas.py                # Pydantic data models
+│   │   └── config.py                     # Settings management
 │   ├── requirements.txt
-│   ├── .env.example
-│   └── .gitignore
-├── frontend/                   # 前端应用
+│   └── run.py                            # Uvicorn launcher
+├── frontend/
 │   ├── src/
-│   │   ├── components/        # Vue组件
-│   │   ├── services/          # API服务
-│   │   ├── types/             # TypeScript类型
-│   │   └── views/             # 页面视图
+│   │   ├── views/
+│   │   │   ├── Home.vue                  # Trip planner form
+│   │   │   ├── Result.vue                # Trip plan display + PDF
+│   │   │   └── History.vue               # History management
+│   │   ├── services/
+│   │   │   └── api.ts                    # Axios API client
+│   │   ├── types/
+│   │   │   └── index.ts                  # TypeScript interfaces
+│   │   ├── App.vue
+│   │   └── main.ts
 │   ├── package.json
 │   └── vite.config.ts
-└── README.md
+├── docs/                                  # Project documentation
+├── start-all.ps1                          # Start both services
+├── start-backend.ps1                      # Backend launcher
+└── start-frontend.ps1                     # Frontend launcher
 ```
 
-## 🚀 快速开始
+## Getting Started
 
-### 前提条件
+### Prerequisites
 
 - Python 3.10+
-- Node.js 16+
-- 高德地图API密钥 (Web服务API和Web端(JS API))
-- LLM API密钥 (OpenAI/DeepSeek等)
+- Node.js 18+
+- [AMap API Key](https://lbs.amap.com/) (Web Service API)
+- LLM API Key (OpenAI / DeepSeek / compatible provider)
 
-### 后端安装
+### Backend Setup
 
-1. 进入后端目录
 ```bash
 cd backend
-```
 
-2. 创建虚拟环境
-```bash
+# Create and activate virtual environment
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-```
+venv\Scripts\activate       # Windows
+# source venv/bin/activate  # macOS / Linux
 
-3. 安装依赖
-```bash
+# Install dependencies
 pip install -r requirements.txt
-```
 
-4. 配置环境变量
-```bash
+# Configure environment
 cp .env.example .env
-# 编辑.env文件,填入你的API密钥
+# Edit .env with your API keys:
+#   AMAP_API_KEY=your_amap_web_service_key
+#   LLM_API_KEY=your_llm_api_key
+#   LLM_BASE_URL=https://api.openai.com/v1  (optional)
+#   LLM_MODEL_NAME=gpt-4o                     (optional)
+
+# Start backend
+python run.py
+# Backend runs at http://localhost:8000
+# API docs at http://localhost:8000/docs
 ```
 
-5. 启动后端服务
-```bash
-uvicorn app.api.main:app --reload --host 0.0.0.0 --port 8000
-```
+### Frontend Setup
 
-### 前端安装
-
-1. 进入前端目录
 ```bash
 cd frontend
-```
 
-2. 安装依赖
-```bash
+# Install dependencies
 npm install
-```
 
-3. 配置环境变量
-```bash
-# 创建.env文件, 填入高德地图Web API Key 和 Web端JS API Key
-cp .env.example .env
-```
+# Create .env file
+# VITE_AMAP_JS_KEY=your_amap_js_api_key
+# VITE_API_BASE_URL=http://localhost:8000
 
-4. 启动开发服务器
-```bash
+# Start dev server
 npm run dev
+# Frontend runs at http://localhost:5173
 ```
 
-5. 打开浏览器访问 `http://localhost:5173`
+### Quick Start (Windows PowerShell)
 
-## 📝 使用指南
-
-1. 在首页填写旅行信息:
-   - 目的地城市
-   - 旅行日期和天数
-   - 交通方式偏好
-   - 住宿偏好
-   - 旅行风格标签
-
-2. 点击"生成旅行计划"按钮
-
-3. 系统将:
-   - 调用HelloAgents Agent生成初步计划
-   - Agent自动调用高德地图MCP工具搜索景点
-   - Agent获取天气信息和路线规划
-   - 整合所有信息生成完整行程
-
-4. 查看结果:
-   - 每日详细行程
-   - 景点信息与地图标记
-   - 交通路线规划
-   - 天气预报
-   - 餐饮推荐
-
-## 🔧 核心实现
-
-### HelloAgents Agent集成
-
-```python
-from hello_agents import SimpleAgent, HelloAgentsLLM
-from hello_agents.tools import MCPTool
-
-# 创建高德地图MCP工具
-amap_tool = MCPTool(
-    name="amap",
-    server_command=["uvx", "amap-mcp-server"],
-    env={"AMAP_MAPS_API_KEY": "your_api_key"},
-    auto_expand=True
-)
-
-# 创建旅行规划Agent
-agent = SimpleAgent(
-    name="旅行规划助手",
-    llm=HelloAgentsLLM(),
-    system_prompt="你是一个专业的旅行规划助手..."
-)
-
-# 添加工具
-agent.add_tool(amap_tool)
+```powershell
+.\start-all.ps1
 ```
 
-### MCP工具调用
+## API Endpoints
 
-Agent可以自动调用以下高德地图MCP工具:
-- `maps_text_search`: 搜索景点POI
-- `maps_weather`: 查询天气
-- `maps_direction_walking_by_address`: 步行路线规划
-- `maps_direction_driving_by_address`: 驾车路线规划
-- `maps_direction_transit_integrated_by_address`: 公共交通路线规划
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/trip/plan` | Generate a trip plan |
+| GET | `/api/trip/health` | Service health check |
+| GET | `/api/history` | List all trip history |
+| GET | `/api/history/{id}` | Get trip history detail |
+| PUT | `/api/history/{id}` | Update a trip plan |
+| DELETE | `/api/history/{id}` | Delete a trip plan |
+| GET | `/api/map/poi` | Search POIs |
+| GET | `/api/map/weather` | Query weather |
+| POST | `/api/map/route` | Plan route |
 
-## 📄 API文档
+Full interactive API documentation is available at `http://localhost:8000/docs` (Swagger UI).
 
-启动后端服务后,访问 `http://localhost:8000/docs` 查看完整的API文档。
+## How It Works
 
-主要端点:
-- `POST /api/trip/plan` - 生成旅行计划
-- `GET /api/map/poi` - 搜索POI
-- `GET /api/map/weather` - 查询天气
-- `POST /api/map/route` - 规划路线
+1. User fills in trip preferences (city, dates, interests, budget, transportation) on the frontend form
+2. Backend receives the request and kicks off the multi-agent pipeline:
+   - **Attraction Agent** calls AMap MCP `maps_text_search` to discover POIs matching user preferences
+   - **Weather Agent** calls AMap MCP `maps_weather` for forecasts during the trip dates
+   - **Hotel Agent** calls AMap MCP `maps_text_search` to find accommodations near attractions
+   - **Planner Agent** synthesizes all results into a structured JSON itinerary with daily plans
+3. The itinerary is saved to SQLite history and returned to the frontend
+4. User can view the trip on an interactive AMap, edit details, export to PDF, or revisit past plans
 
-## 🤝 贡献指南
+## AMap MCP Tools
 
-欢迎提交Pull Request或Issue!
+The agents automatically invoke these AMap MCP tools:
 
-## 📜 开源协议
+- `maps_text_search` — POI search (attractions, hotels, restaurants)
+- `maps_weather` — Weather forecast by city
+- `maps_direction_walking_by_address` — Walking route between two addresses
+- `maps_direction_driving_by_address` — Driving route between two addresses
+- `maps_direction_transit_integrated_by_address` — Public transit route between two addresses
+
+## License
 
 CC BY-NC-SA 4.0
 
-## 🙏 致谢
+## Acknowledgements
 
-- [HelloAgents](https://github.com/datawhalechina/Hello-Agents) - 智能体教程
-- [HelloAgents框架](https://github.com/jjyaoao/HelloAgents) - 智能体框架
-- [高德地图开放平台](https://lbs.amap.com/) - 地图服务
-- [amap-mcp-server](https://github.com/sugarforever/amap-mcp-server) - 高德地图MCP服务器
-
----
-
-**智能旅行助手** - 让旅行计划变得简单而智能
+- [HelloAgents](https://github.com/jjyaoao/HelloAgents) — Agent framework
+- [amap-mcp-server](https://github.com/sugarforever/amap-mcp-server) — AMap MCP server
+- [AMap Open Platform](https://lbs.amap.com/) — Map & geospatial services
